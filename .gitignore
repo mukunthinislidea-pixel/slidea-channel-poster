@@ -1,0 +1,6 @@
+.wa-auth/
+qr.png
+node_modules/
+__pycache__/
+*.pyc
+.env

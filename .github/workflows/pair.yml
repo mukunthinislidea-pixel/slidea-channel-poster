@@ -1,0 +1,50 @@
+name: Pair WhatsApp
+
+# Manual only. Links (or re-links) the bot's WhatsApp number to this repo.
+# Run this once at first setup, and again any time the "posting is
+# logged out" alert fires.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "qr (scan with your phone) or code (enter a pairing code)"
+        required: true
+        default: "qr"
+        type: choice
+        options: ["qr", "code"]
+      confirm:
+        description: 'Type "yes" to confirm you want to (re)link the WhatsApp session'
+        required: true
+        default: "no"
+      phone_number:
+        description: "Only needed for mode=code. Full number with country code, digits only, e.g. 919363904228"
+        required: false
+        default: ""
+
+jobs:
+  pair:
+    if: github.event.inputs.confirm == 'yes'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --prefix baileys
+
+      - name: Pair (watch this step's log for the QR / code)
+        env:
+          WA_SESSION_KEY: ${{ secrets.WA_SESSION_KEY }}
+          WA_CHANNEL_INVITE: ${{ secrets.WA_CHANNEL_INVITE }}
+          PAIR_PHONE_NUMBER: ${{ github.event.inputs.phone_number }}
+        run: node baileys/pair.js ${{ github.event.inputs.mode }}
+
+      - name: Commit new session
+        run: |
+          git config user.name "slidea-channel-poster-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/wa-session.enc
+          git diff --cached --quiet || git commit -m "state: re-pair WhatsApp session"
+          git push

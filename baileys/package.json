@@ -1,0 +1,12 @@
+{
+  "name": "slidea-channel-poster-baileys",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WhatsApp Web transport (Baileys) for the Slidea channel poster - free, self-hosted, no paid API.",
+  "type": "commonjs",
+  "dependencies": {
+    "@itsliaaa/baileys": "^0.3.18-final",
+    "qrcode": "^1.5.3",
+    "qrcode-terminal": "^0.12.0"
+  }
+}

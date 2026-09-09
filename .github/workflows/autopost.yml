@@ -1,0 +1,64 @@
+name: Autopost
+
+# Hourly at :22 (offset from the other slideegg-whatsapp-bot repo's :07,
+# so the two never hit slideegg.com or GitHub's runners in the same
+# minute). Cap is 8 posts/day, so hourly checking is not the bottleneck.
+# See HANDOVER.md section 6 for why NOT every 15 minutes (ban risk - a
+# real linked device doesn't reconnect from a new datacenter IP that often).
+on:
+  schedule:
+    - cron: "22 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: slidea-channel-poster-autopost
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --prefix baileys
+
+      - name: Run poster
+        env:
+          SENDER: baileys
+          DRY_RUN: "0"
+          DAILY_LIMIT: "8"          # 8 posts every day
+          SCAN_PAGES: "2"           # /recent-templates/ shows 24/page -> 48 newest checked for "new"
+          NEW_PER_RUN: "8"          # brand-new templates may go out as soon as they appear
+          BACKFILL_PER_RUN: "1"     # older templates trickle 1 per hourly run, so the 8 spread out
+          BACKFILL_MAX_PAGES: "21"  # /recent-templates/ holds ~500 templates over ~21 pages
+          ACTIVE_FROM: "9"          # IST. 9am-9pm keeps posts in waking hours;
+          ACTIVE_TO: "21"           # set 0/24 for round the clock.
+          ALERT_AFTER_HOURS: "24"
+          WA_SESSION_KEY: ${{ secrets.WA_SESSION_KEY }}
+          WA_CHANNEL_INVITE: ${{ secrets.WA_CHANNEL_INVITE }}
+        run: python slidea_channel_poster.py
+
+      - name: Alert on failure (skipped for manual runs)
+        if: github.event_name != 'workflow_dispatch'
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: python report.py --alert
+
+      - name: Commit state
+        run: |
+          git config user.name "slidea-channel-poster-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state/
+          git diff --cached --quiet || git commit -m "state: autopost run $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push
