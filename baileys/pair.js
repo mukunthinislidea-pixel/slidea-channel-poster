@@ -6,7 +6,7 @@
  * an admin of the target channel. On success, state/wa-session.enc is
  * written/updated and committed by the workflow.
  *
- * Three hard-won traps, do not "simplify" these away:
+ * Four hard-won traps, do not "simplify" these away:
  *
  *  1. Browser identity: pairing-code mode must use exactly
  *     ["Ubuntu", "Chrome", "20.0.04"]. Browsers.macOS("Desktop") lets
@@ -27,6 +27,10 @@
  *     the log, destroying the pattern. QRCode.toString({type:"utf8"})
  *     uses half-block characters - one per module, two module rows per
  *     line, ~37 chars wide - and survives the log viewer intact.
+ *
+ *  4. The logger must be pino-shaped (a .child() method that returns a
+ *     logger). A plain { level: "silent" } object dies instantly with
+ *     "logger.child is not a function" - see pairLogger below.
  */
 
 const fs = require("fs");
@@ -41,6 +45,26 @@ const {
 } = require("@itsliaaa/baileys");
 const session = require("./session");
 const { resolveChannel, waitForOpen } = require("./wa");
+
+/**
+ * Trap #4 (see wa.js): Baileys calls logger.child({...}) internally, so a
+ * bare { level: "silent" } object throws "logger.child is not a function"
+ * before the QR is ever emitted. Here we keep trace/debug/info quiet (they
+ * would bury the QR in the Actions log) but let warn/fatal/error through to
+ * stderr so a real pairing problem is visible.
+ */
+const pairLogger = {
+  level: "warn",
+  trace() {},
+  debug() {},
+  info() {},
+  warn: (...a) => console.error("[wa warn]", ...a),
+  error: (...a) => console.error("[wa error]", ...a),
+  fatal: (...a) => console.error("[wa fatal]", ...a),
+  child() {
+    return pairLogger;
+  },
+};
 
 const WA_SESSION_KEY = process.env.WA_SESSION_KEY;
 const MODE = (process.argv[2] || "qr").toLowerCase(); // "qr" | "code"
@@ -62,7 +86,7 @@ async function attemptOnce() {
     auth: state,
     printQRInTerminal: false,
     browser: ["Ubuntu", "Chrome", "20.0.04"], // trap #1 - do not swap for Browsers.macOS(...)
-    logger: { level: "silent" },
+    logger: pairLogger,
   });
 
   sock.ev.on("creds.update", saveCreds);
