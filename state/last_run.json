@@ -1,5 +1,5 @@
 {
-  "at": "2026-09-09T09:33:31.953195+00:00",
+  "at": "2026-09-09T10:33:17.772517+00:00",
   "backfilled": 0,
   "diagnostics": {
     "warnings": []
@@ -7,5 +7,6 @@
   "new_found": 48,
   "posted": 0,
   "posted_today": 0,
-  "problem": "sender_error: sender_process_not_running"
+  "problem": "the run crashed: [Errno 32] Broken pipe",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/slidea-channel-poster/slidea-channel-poster/slidea_channel_poster.py\", line 527, in <module>\n    main()\n  File \"/home/runner/work/slidea-channel-poster/slidea-channel-poster/slidea_channel_poster.py\", line 487, in main\n    result = sender.send(build_caption(item), fetch_thumbnail_data_uri(item.thumb))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/slidea-channel-poster/slidea-channel-poster/slidea_channel_poster.py\", line 415, in send\n    self.proc.stdin.write(json.dumps({\"caption\": caption, \"media\": media_data_uri}) + \"\\n\")\nBrokenPipeError: [Errno 32] Broken pipe\n"
 }
