@@ -1,12 +1,13 @@
 {
-  "at": "2026-09-11T11:31:04.385569+00:00",
+  "at": "2026-09-11T12:37:43.498430+00:00",
   "backfilled": 0,
   "diagnostics": {
-    "warnings": []
+    "warnings": [
+      "thumbnail fetch failed (https://slidea.com/Layout/20251118070930-691c1b9f3214d131dd627d68-crop.png): 403 Client Error: Forbidden for url: https://slidea.com/Layout/20251118070930-691c1b9f3214d131dd627d68-crop.png"
+    ]
   },
   "new_found": 48,
   "posted": 0,
   "posted_today": 0,
-  "problem": "the run crashed: [Errno 32] Broken pipe",
-  "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/slidea-channel-poster/slidea-channel-poster/slidea_channel_poster.py\", line 527, in <module>\n    main()\n  File \"/home/runner/work/slidea-channel-poster/slidea-channel-poster/slidea_channel_poster.py\", line 487, in main\n    result = sender.send(build_caption(item), fetch_thumbnail_data_uri(item.thumb))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/slidea-channel-poster/slidea-channel-poster/slidea_channel_poster.py\", line 415, in send\n    self.proc.stdin.write(json.dumps({\"caption\": caption, \"media\": media_data_uri}) + \"\\n\")\nBrokenPipeError: [Errno 32] Broken pipe\n"
+  "problem": "sender_error: sender_error: connection closed before opening (status 428)"
 }
