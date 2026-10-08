@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-08T13:39:34.100489+00:00",
+  "at": "2026-10-08T14:39:54.296240+00:00",
   "backfilled": 0,
   "diagnostics": {
     "warnings": []
@@ -7,5 +7,5 @@
   "new_found": 48,
   "posted": 0,
   "posted_today": 0,
-  "problem": "sender_error: sender_error: connection closed before opening (status 428)"
+  "problem": "sender_error: sender_process_not_running"
 }
